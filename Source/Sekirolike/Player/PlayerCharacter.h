@@ -16,30 +16,40 @@ public:
 	APlayerCharacter();
 
 protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Player", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Player")
 	TObjectPtr<class APlayerInputManager> PlayerInput;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Player", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Player")
 	TObjectPtr<class UPlayerAnimInstance> Animator;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Camera lock state", meta = (AllowPrivateAccess = "true"))
-	bool LockState;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Camera lock state")
+	bool LockState = false;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Settings")
+	float CameraMaxEulerX = 30.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Settings")
+	float CameraMinEulerX = -40.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Settings")
+	float CameraHorizontalSpeed = 100.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Settings")
+	float CameraVerticalSpeed = 50.0f;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
 	FVector PlanarVec;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement", meta = (AllowPrivateAccess = "true"))
-	float WalkSpeed;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement", meta = (AllowPrivateAccess = "true"))
-	float RunMultiplier;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
+	float Dmag;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
+	FVector Dvec;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 	UFUNCTION(BlueprintCallable, Category = "Character Movement")
-	void Movement(float deltaTime);
+	void Locomotion(float deltaTime);
 
 	UFUNCTION(BlueprintCallable, Category = "Camera Movement")
 	void CameraControl(float deltaTime);

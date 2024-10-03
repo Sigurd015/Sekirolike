@@ -19,9 +19,19 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	PlayerInput = Cast<APlayerInputManager>(GetController());
+	if (PlayerInput == nullptr)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("PlayerInput is nullptr"));
+	}
+	Animator = Cast<UPlayerAnimInstance>(GetMesh()->GetAnimInstance());
+	if (PlayerInput == nullptr)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Animator is nullptr"));
+	}
 }
 
-void APlayerCharacter::Movement(float deltaTime)
+void APlayerCharacter::Locomotion(float deltaTime)
 {
 	if (LockState)
 	{
@@ -29,10 +39,19 @@ void APlayerCharacter::Movement(float deltaTime)
 	}
 	else
 	{
-		float speed = PlayerInput->Dmag * (!PlayerInput->Run ? WalkSpeed : WalkSpeed * RunMultiplier);
+		// Calculate the movement direction and speed
+		FVector2f temp = FVector2f(PlayerInput->MappedDright, PlayerInput->MappedDup);
+		Dmag = FMath::Sqrt(temp.X * temp.X + temp.Y * temp.Y);
+
+		FRotator rotator = GetControlRotation();
+		FRotator yawRotator = FRotator(0, rotator.Yaw, 0);
+		FVector forward = FQuat(yawRotator).GetForwardVector();
+		FVector right = FQuat(yawRotator).GetRightVector();
+		Dvec = temp.X * right + temp.Y * forward;
+
 		Animator->Right = 0;
-		Animator->Forward = FMath::FInterpTo(Animator->Forward, speed, deltaTime, 5.0f);
-		AddMovementInput(PlayerInput->Dvec, speed);
+		Animator->Forward = FMath::FInterpTo(Animator->Forward, FMath::Clamp(Dmag * 2.0f, (!PlayerInput->Sprint ? 0.0f : 1.0f), (!PlayerInput->Sprint ? 1.0f : 2.0f)), deltaTime, 5.0f);
+		AddMovementInput(Dvec, FMath::Clamp(Dmag, (!PlayerInput->Sprint ? 0.0f : 0.5f), (!PlayerInput->Sprint ? 0.5f : 1.0f)));
 	}
 }
 
@@ -44,8 +63,11 @@ void APlayerCharacter::CameraControl(float deltaTime)
 	}
 	else
 	{
-		AddControllerPitchInput(PlayerInput->Jup);
-		AddControllerYawInput(PlayerInput->Jright);
+		FRotator currentRotator = Controller->GetControlRotation();
+		currentRotator.Pitch -= PlayerInput->Jup * CameraVerticalSpeed * deltaTime;
+		currentRotator.Pitch = FMath::ClampAngle(currentRotator.Pitch, CameraMinEulerX, CameraMaxEulerX);
+		currentRotator.Yaw += PlayerInput->Jright * CameraHorizontalSpeed * deltaTime;
+		Controller->SetControlRotation(currentRotator);
 	}
 }
 
@@ -54,6 +76,9 @@ void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	Locomotion(DeltaTime);
+
+	CameraControl(DeltaTime);
 }
 
 // Called to bind functionality to input

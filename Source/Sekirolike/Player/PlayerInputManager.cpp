@@ -12,16 +12,6 @@ void APlayerInputManager::CalLeftStickInput(FVector2D axis, float deltaTime, flo
 	Dup = FMath::FInterpTo(Dup, targetDup, deltaTime, interpSpeed);
 	Dright = FMath::FInterpTo(Dright, targetDright, deltaTime, interpSpeed);
 
-	FVector2f temp = FVector2f::ZeroVector;
-	temp.X = Dright * FMath::Sqrt(1.0f - 0.5f * (Dup * Dup));
-	temp.Y = Dup * FMath::Sqrt(1.0f - 0.5f * (Dright * Dright));
-
-	Dmag = FMath::Sqrt(temp.X * temp.X + temp.Y * temp.Y);
-
-	FRotator rotator = PlayerTarget->GetControlRotation();
-	FRotator yawRotator = FRotator(0, rotator.Yaw, 0);
-	FVector forward = FQuat(yawRotator).GetForwardVector();
-	FVector right = FQuat(yawRotator).GetRightVector();
-
-	Dvec = temp.X * right + temp.Y * forward;
+	MappedDright = Dright * FMath::Sqrt(1.0f - 0.5f * (Dup * Dup));
+	MappedDup = Dup * FMath::Sqrt(1.0f - 0.5f * (Dright * Dright));
 }

@@ -16,10 +16,12 @@ public:
 	float Dup;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Output Signals")
 	float Dright;
+	// Elliptical grid mapped dup
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Output Signals")
-	float Dmag;
+	float MappedDup;
+	// Elliptical grid mapped dright
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Output Signals")
-	FVector Dvec;
+	float MappedDright;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Output Signals")
 	float Jup;
@@ -27,16 +29,14 @@ public:
 	float Jright;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Output Signals")
-	bool Run;
+	bool Dodge;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Output Signals")
+	bool Sprint;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Output Signals")
 	bool Jump;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Output Signals")
-	bool LockState;
-
-private:
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Player", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class AController> PlayerTarget;
+	bool LockOn;
 
 protected:
 	UFUNCTION(BlueprintCallable, Category = "Input")
