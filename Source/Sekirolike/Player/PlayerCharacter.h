@@ -6,6 +6,14 @@
 #include "GameFramework/Character.h"
 #include "PlayerCharacter.generated.h"
 
+class UInputMappingContext;
+class UInputAction;
+struct FInputActionValue;
+struct FInputActionInstance;
+struct FEnhancedInputActionValueBinding;
+class USpringArmComponent;
+class UCameraComponent;
+
 UCLASS()
 class SEKIROLIKE_API APlayerCharacter : public ACharacter
 {
@@ -15,44 +23,67 @@ public:
 	// Sets default values for this character's properties
 	APlayerCharacter();
 
+private:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
+	UInputMappingContext* DefaultMappingContext;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
+	UInputAction* MoveAction;
+	FEnhancedInputActionValueBinding* MoveActionBinding;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
+	UInputAction* LookAction;
+	FEnhancedInputActionValueBinding* LookActionBinding;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
+	UInputAction* JumpAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
+	UInputAction* SprintAction;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
+	USpringArmComponent* CameraBoom;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
+	UCameraComponent* FollowCamera;
+
 protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Player")
-	TObjectPtr<class APlayerInputManager> PlayerInput;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Player")
-	TObjectPtr<class UPlayerAnimInstance> Animator;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Camera lock state")
-	bool LockState = false;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Settings")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Camera Settings")
 	float CameraMaxEulerX = 30.0f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Settings")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Camera Settings")
 	float CameraMinEulerX = -40.0f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Settings")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Camera Settings")
 	float CameraHorizontalSpeed = 100.0f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Settings")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Camera Settings")
 	float CameraVerticalSpeed = 50.0f;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
+public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Signals|Animation", meta = (AllowPrivateAccess = "true"))
+	bool Dodge;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Signals|Animation", meta = (AllowPrivateAccess = "true"))
+	float Forward;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Signals|Animation", meta = (AllowPrivateAccess = "true"))
+	float Right;
+
+private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Signals", meta = (AllowPrivateAccess = "true"))
+	bool Sprint;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Signals", meta = (AllowPrivateAccess = "true"))
+	bool LockOn;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera lock state", meta = (AllowPrivateAccess = "true"))
+	bool LockState = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 	FVector PlanarVec;
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 	float Dmag;
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 	FVector Dvec;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera lock state", meta = (AllowPrivateAccess = "true"))
+	bool LockPlanar = false;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-	UFUNCTION(BlueprintCallable, Category = "Character Movement")
-	void Locomotion(float deltaTime);
-
-	UFUNCTION(BlueprintCallable, Category = "Camera Movement")
-	void CameraControl(float deltaTime);
 
 public:
 	// Called every frame
@@ -61,4 +92,12 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+private:
+	void StartSprint(const FInputActionInstance& instance);
+	void OnSprint(const FInputActionInstance& instance);
+	void StopSprinting(const FInputActionInstance& instance);
+
+	void GridMapping(float deltaTime);
+	void Locomotion(float deltaTime);
+	void CameraControl(float deltaTime);
 };
