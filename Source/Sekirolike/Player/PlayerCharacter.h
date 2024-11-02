@@ -45,13 +45,13 @@ private:
 	UCameraComponent* FollowCamera;
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Camera Settings")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera|Camera Settings")
 	float CameraMaxEulerX = 30.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Camera Settings")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera|Camera Settings")
 	float CameraMinEulerX = -40.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Camera Settings")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera|Camera Settings")
 	float CameraHorizontalSpeed = 100.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Camera Settings")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera|Camera Settings")
 	float CameraVerticalSpeed = 50.0f;
 
 public:
@@ -69,16 +69,16 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Signals", meta = (AllowPrivateAccess = "true"))
 	bool LockOn;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera lock state", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Signals|Camera", meta = (AllowPrivateAccess = "true"))
 	bool LockState = false;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Signals|Movement", meta = (AllowPrivateAccess = "true"))
 	FVector PlanarVec;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Signals|Movement", meta = (AllowPrivateAccess = "true"))
 	float Dmag;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Signals|Movement", meta = (AllowPrivateAccess = "true"))
 	FVector Dvec;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera lock state", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Signals|Movement", meta = (AllowPrivateAccess = "true"))
 	bool LockPlanar = false;
 
 protected:
