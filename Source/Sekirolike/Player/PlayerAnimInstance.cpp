@@ -18,7 +18,7 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	if (Character)
 	{
-		Forward = FMath::FInterpTo(Forward, Character->Forward, DeltaSeconds, 5.0f);
+		Forward = Character->Forward;
 		Right = Character->Right;
 		IsFalling = MovementComponent->IsFalling();
 		Velocity = Character->GetVelocity();

@@ -13,6 +13,8 @@ struct FInputActionInstance;
 struct FEnhancedInputActionValueBinding;
 class USpringArmComponent;
 class UCameraComponent;
+class AActor;
+class UAnimInstance;
 
 UCLASS()
 class SEKIROLIKE_API APlayerCharacter : public ACharacter
@@ -23,7 +25,7 @@ public:
 	// Sets default values for this character's properties
 	APlayerCharacter();
 
-private:
+protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	UInputMappingContext* DefaultMappingContext;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
@@ -38,13 +40,18 @@ private:
 	UInputAction* JumpAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	UInputAction* SprintAction;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
+	UInputAction* LockAction;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* CameraBoom;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
 
-protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animation", meta = (AllowPrivateAccess = "true"))
+	UAnimInstance* AnimInstance;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera|Camera Settings")
 	float CameraMaxEulerX = 30.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera|Camera Settings")
@@ -53,10 +60,21 @@ protected:
 	float CameraHorizontalSpeed = 100.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera|Camera Settings")
 	float CameraVerticalSpeed = 50.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera|Camera Settings")
+	float LockTargetDistance = 1000.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera|Camera Settings")
+	float SphereRadius = 50.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage|Dodge", meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* DodgeForwardAnimMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage|Dodge", meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* DodgeBackwardAnimMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage|Dodge", meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* DodgeLeftAnimMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage|Dodge", meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* DodgeRightAnimMontage;
 
 public:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Signals|Animation", meta = (AllowPrivateAccess = "true"))
-	bool Dodge;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Signals|Animation", meta = (AllowPrivateAccess = "true"))
 	float Forward;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Signals|Animation", meta = (AllowPrivateAccess = "true"))
@@ -66,11 +84,11 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Signals", meta = (AllowPrivateAccess = "true"))
 	bool Sprint;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Signals", meta = (AllowPrivateAccess = "true"))
-	bool LockOn;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Signals|Camera", meta = (AllowPrivateAccess = "true"))
 	bool LockState = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Signals|Camera", meta = (AllowPrivateAccess = "true"))
+	AActor* TargetActor = nullptr;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Signals|Movement", meta = (AllowPrivateAccess = "true"))
 	FVector PlanarVec;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Signals|Movement", meta = (AllowPrivateAccess = "true"))
@@ -94,10 +112,12 @@ public:
 
 private:
 	void StartSprint(const FInputActionInstance& instance);
-	void OnSprint(const FInputActionInstance& instance);
 	void StopSprinting(const FInputActionInstance& instance);
+	void Dodge(const FInputActionInstance& instance);
 
-	void GridMapping(float deltaTime);
+	void LockUnlock();
+
+	void GridMapping();
 	void Locomotion(float deltaTime);
 	void CameraControl(float deltaTime);
 };

@@ -11,7 +11,8 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "InputAction.h"
-
+#include "Kismet/KismetSystemLibrary.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -46,6 +47,7 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	AnimInstance = GetMesh()->GetAnimInstance();
 }
 
 // Called every frame
@@ -64,7 +66,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
 	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<
+			UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 		{
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
@@ -75,45 +78,84 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		MoveActionBinding = &EnhancedInputComponent->BindActionValue(MoveAction);
 		LookActionBinding = &EnhancedInputComponent->BindActionValue(LookAction);
 
+		EnhancedInputComponent->BindAction(LockAction, ETriggerEvent::Triggered, this, &APlayerCharacter::LockUnlock);
+
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 
-		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this, &APlayerCharacter::StartSprint);
-		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Ongoing, this, &APlayerCharacter::OnSprint);
-		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &APlayerCharacter::StopSprinting);
+		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Triggered, this,
+		                                   &APlayerCharacter::StartSprint);
+		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this,
+		                                   &APlayerCharacter::StopSprinting);
+		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Canceled, this,
+		                                   &APlayerCharacter::Dodge);
 	}
 }
 
-//void  APlayerCharacter::DodgeTrigger(const FInputActionInstance& instance)
-//{
-//	Dodge = true;
-//
-//	GEngine->AddOnScreenDebugMessage(1, 1, FColor::Cyan, "Dodge " + FString::SanitizeFloat(instance.GetElapsedTime()));
-//
-//	//LaunchCharacter(Dvec * 1000, true, false);
-//}
-
 void APlayerCharacter::StartSprint(const FInputActionInstance& instance)
 {
-	Sprint = true;
-	GEngine->AddOnScreenDebugMessage(1, 1, FColor::Cyan, "Dodge " + FString::SanitizeFloat(instance.GetElapsedTime()));
-}
-
-void APlayerCharacter::OnSprint(const FInputActionInstance& instance)
-{
-	Sprint = true;
-	GEngine->AddOnScreenDebugMessage(1, 1, FColor::Cyan, "Dodge " + FString::SanitizeFloat(instance.GetElapsedTime()));
+	GEngine->AddOnScreenDebugMessage(1, 1, FColor::Red, "Sprinting");
+	instance.GetElapsedTime() > 0.1f ? Sprint = true : Sprint = false;
 }
 
 void APlayerCharacter::StopSprinting(const FInputActionInstance& instance)
 {
 	Sprint = false;
-	GEngine->AddOnScreenDebugMessage(1, 1, FColor::Cyan, "Dodge " + FString::SanitizeFloat(instance.GetElapsedTime()));
+}
+
+void APlayerCharacter::Dodge(const FInputActionInstance& instance)
+{
+	GEngine->AddOnScreenDebugMessage(1, 1, FColor::Red, "Playing Dodge Forward Animation");
+
+	if (LockState)
+	{
+	}
+	else
+	{
+		AnimInstance->Montage_Play(DodgeForwardAnimMontage, 1.0f);
+	}
+}
+
+void APlayerCharacter::LockUnlock()
+{
+	GEngine->AddOnScreenDebugMessage(1, 2, FColor::Red, "Locking");
+
+	if (TargetActor != nullptr)
+	{
+		TargetActor = nullptr;
+		LockState = false;
+		return;
+	}
+
+	FVector startLocation = GetActorLocation();
+	FRotator rotator = GetControlRotation();
+	FVector forward = GetMesh()->GetForwardVector();
+	FVector endLocation = startLocation + forward * LockTargetDistance;
+
+	FHitResult HitResult;
+	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypesArray;
+	TArray<AActor*> IgnoresActors;
+	IgnoresActors.Add(this);
+	ObjectTypesArray.Reserve(1);
+	ObjectTypesArray.Add(UEngineTypes::ConvertToObjectType(ECC_Pawn));
+
+	bool hit = UKismetSystemLibrary::SphereTraceSingleForObjects(GetWorld(), startLocation, endLocation, SphereRadius,
+	                                                             ObjectTypesArray,
+	                                                             false, IgnoresActors, EDrawDebugTrace::ForDuration,
+	                                                             HitResult,
+	                                                             true);
+	if (hit)
+	{
+		TargetActor = HitResult.GetActor();
+		LockState = true;
+		GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red,
+		                                 FString::Printf(TEXT("Obj name:%s"), *HitResult.GetActor()->GetName()));
+	}
 }
 
 // Elliptical Grid Mapping
 // See: https://arxiv.org/ftp/arxiv/papers/1509/1509.06344.pdf
-void APlayerCharacter::GridMapping(float deltaTime)
+void APlayerCharacter::GridMapping()
 {
 	const FVector2D inputValue = MoveActionBinding->GetValue().Get<FVector2D>();
 	float dup = inputValue.Y;
@@ -137,20 +179,37 @@ void APlayerCharacter::Locomotion(float deltaTime)
 	// TODO: May change to use animation notifications 
 	LockPlanar = GetCharacterMovement()->IsFalling();
 
+	// Calculate the movement direction and speed
+	GridMapping();
+
 	if (LockState)
 	{
+		GetCharacterMovement()->bOrientRotationToMovement = false;
+		FVector location = GetActorLocation();
+		FVector targetLocation = TargetActor->GetActorLocation();
+		FRotator targetRot = UKismetMathLibrary::FindLookAtRotation(location, targetLocation);
+		GetController()->SetControlRotation(targetRot);
 
+		FVector localDevc = GetActorTransform().InverseTransformVector(Dvec);
+		Right = localDevc.X * (!Sprint ? 1.0f : 2.0f);
+		Forward = localDevc.Z * (!Sprint ? 1.0f : 2.0f);
+
+		if (!LockPlanar)
+		{
+		}
+		AddMovementInput(Dvec, FMath::Clamp(Dmag, (!Sprint ? 0.0f : 0.5f), (!Sprint ? 0.5f : 1.0f)));
 	}
 	else
 	{
-		// Calculate the movement direction and speed
-		GridMapping(deltaTime);
-
+		GetCharacterMovement()->bOrientRotationToMovement = true;
 		Right = 0;
-		Forward = FMath::FInterpTo(Forward, FMath::Clamp(Dmag * 2.0f, (!Sprint ? 0.0f : 1.0f), (!Sprint ? 1.0f : 2.0f)), deltaTime, 5.0f);
+		Forward = FMath::FInterpTo(Forward, FMath::Clamp(Dmag * 2.0f, (!Sprint ? 0.0f : 1.0f), (!Sprint ? 1.0f : 2.0f)),
+		                           deltaTime, 5.0f);
 
 		if (!LockPlanar)
-			AddMovementInput(Dvec, FMath::Clamp(Dmag, (!Sprint ? 0.0f : 0.5f), (!Sprint ? 0.5f : 1.0f)));
+		{
+		}
+		AddMovementInput(Dvec, FMath::Clamp(Dmag, (!Sprint ? 0.0f : 0.5f), (!Sprint ? 0.5f : 1.0f)));
 	}
 }
 
@@ -162,7 +221,6 @@ void APlayerCharacter::CameraControl(float deltaTime)
 
 	if (LockState)
 	{
-
 	}
 	else
 	{

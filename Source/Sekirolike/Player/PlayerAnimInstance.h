@@ -14,7 +14,7 @@ class SEKIROLIKE_API UPlayerAnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
 
-private:
+protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ref|Player", meta = (AllowPrivateAccess = "true"))
 	APlayerCharacter* Character;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ref|Player", meta = (AllowPrivateAccess = "true"))
@@ -22,8 +22,6 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Signals|Animation", meta = (AllowPrivateAccess = "true"))
 	bool IsFalling;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Signals|Animation", meta = (AllowPrivateAccess = "true"))
-	bool Dodge;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Signals|Animation", meta = (AllowPrivateAccess = "true"))
 	float Forward;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Signals|Animation", meta = (AllowPrivateAccess = "true"))
