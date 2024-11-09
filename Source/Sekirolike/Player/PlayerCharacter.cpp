@@ -83,11 +83,11 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 
-		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Triggered, this,
+		EnhancedInputComponent->BindAction(SprintDodgeAction, ETriggerEvent::Triggered, this,
 		                                   &APlayerCharacter::StartSprint);
-		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this,
+		EnhancedInputComponent->BindAction(SprintDodgeAction, ETriggerEvent::Completed, this,
 		                                   &APlayerCharacter::StopSprinting);
-		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Canceled, this,
+		EnhancedInputComponent->BindAction(SprintDodgeAction, ETriggerEvent::Canceled, this,
 		                                   &APlayerCharacter::Dodge);
 	}
 }
@@ -120,36 +120,43 @@ void APlayerCharacter::LockUnlock()
 {
 	GEngine->AddOnScreenDebugMessage(1, 2, FColor::Red, "Locking");
 
-	if (TargetActor != nullptr)
+	if (Target != nullptr)
 	{
-		TargetActor = nullptr;
+		Target = nullptr;
 		LockState = false;
 		return;
 	}
 
 	FVector startLocation = GetActorLocation();
-	FRotator rotator = GetControlRotation();
-	FVector forward = GetMesh()->GetForwardVector();
-	FVector endLocation = startLocation + forward * LockTargetDistance;
+	FVector endLocation = startLocation + GetActorForwardVector() * LockTargetDistance;
 
 	FHitResult HitResult;
-	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypesArray;
 	TArray<AActor*> IgnoresActors;
+	IgnoresActors.Reserve(1);
 	IgnoresActors.Add(this);
+	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypesArray;
 	ObjectTypesArray.Reserve(1);
 	ObjectTypesArray.Add(UEngineTypes::ConvertToObjectType(ECC_Pawn));
 
-	bool hit = UKismetSystemLibrary::SphereTraceSingleForObjects(GetWorld(), startLocation, endLocation, SphereRadius,
+	bool hit = UKismetSystemLibrary::SphereTraceSingleForObjects(GetWorld(), startLocation, endLocation,
+	                                                             LockTargetRadius,
 	                                                             ObjectTypesArray,
 	                                                             false, IgnoresActors, EDrawDebugTrace::ForDuration,
 	                                                             HitResult,
 	                                                             true);
 	if (hit)
 	{
-		TargetActor = HitResult.GetActor();
+		Target = HitResult.GetActor();
+		FVector origin;
+		FVector boxExtent;
+		Target->GetActorBounds(false, origin, boxExtent);
+		TargetHeight = boxExtent.Z;
 		LockState = true;
+
 		GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red,
-		                                 FString::Printf(TEXT("Obj name:%s"), *HitResult.GetActor()->GetName()));
+		                                 FString::Printf(TEXT("Obj name:%s"), *Target->GetName()));
+		GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red,
+		                                 FString::Printf(TEXT("Obj height:%f"), TargetHeight));
 	}
 }
 
@@ -185,14 +192,11 @@ void APlayerCharacter::Locomotion(float deltaTime)
 	if (LockState)
 	{
 		GetCharacterMovement()->bOrientRotationToMovement = false;
-		FVector location = GetActorLocation();
-		FVector targetLocation = TargetActor->GetActorLocation();
-		FRotator targetRot = UKismetMathLibrary::FindLookAtRotation(location, targetLocation);
-		GetController()->SetControlRotation(targetRot);
+		GetCharacterMovement()->bUseControllerDesiredRotation = true;
 
 		FVector localDevc = GetActorTransform().InverseTransformVector(Dvec);
-		Right = localDevc.X * (!Sprint ? 1.0f : 2.0f);
-		Forward = localDevc.Z * (!Sprint ? 1.0f : 2.0f);
+		Right = localDevc.Y * (!Sprint ? 1.0f : 2.0f);
+		Forward = localDevc.X * (!Sprint ? 1.0f : 2.0f);
 
 		if (!LockPlanar)
 		{
@@ -202,6 +206,8 @@ void APlayerCharacter::Locomotion(float deltaTime)
 	else
 	{
 		GetCharacterMovement()->bOrientRotationToMovement = true;
+		GetCharacterMovement()->bUseControllerDesiredRotation = false;
+
 		Right = 0;
 		Forward = FMath::FInterpTo(Forward, FMath::Clamp(Dmag * 2.0f, (!Sprint ? 0.0f : 1.0f), (!Sprint ? 1.0f : 2.0f)),
 		                           deltaTime, 5.0f);
@@ -221,6 +227,14 @@ void APlayerCharacter::CameraControl(float deltaTime)
 
 	if (LockState)
 	{
+		FVector startLocation = GetActorLocation();
+		FVector targetLocation = Target->GetActorLocation();
+		FRotator targetRot = UKismetMathLibrary::FindLookAtRotation(startLocation, targetLocation);
+		targetRot.Pitch -= LockTargetHeightOffset;
+		GetController()->SetControlRotation(targetRot);
+
+		if (FVector::Distance(targetLocation, GetActorLocation()) > LockTargetDistance)
+			LockUnlock();
 	}
 	else
 	{

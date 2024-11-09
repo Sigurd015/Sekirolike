@@ -16,6 +16,7 @@ class UCameraComponent;
 class AActor;
 class UAnimInstance;
 
+
 UCLASS()
 class SEKIROLIKE_API APlayerCharacter : public ACharacter
 {
@@ -39,8 +40,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	UInputAction* JumpAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
-	UInputAction* SprintAction;
-	
+	UInputAction* SprintDodgeAction;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	UInputAction* LockAction;
 
@@ -51,7 +52,7 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animation", meta = (AllowPrivateAccess = "true"))
 	UAnimInstance* AnimInstance;
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera|Camera Settings")
 	float CameraMaxEulerX = 30.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera|Camera Settings")
@@ -60,18 +61,24 @@ protected:
 	float CameraHorizontalSpeed = 100.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera|Camera Settings")
 	float CameraVerticalSpeed = 50.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera|Camera Settings")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera|Camera Settings|Lock Target")
+	float LockTargetHeightOffset = 15.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera|Camera Settings|Lock Target")
 	float LockTargetDistance = 1000.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera|Camera Settings")
-	float SphereRadius = 50.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera|Camera Settings|Lock Target")
+	float LockTargetRadius = 50.0f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage|Dodge", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage|Dodge",
+		meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* DodgeForwardAnimMontage;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage|Dodge", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage|Dodge",
+		meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* DodgeBackwardAnimMontage;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage|Dodge", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage|Dodge",
+		meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* DodgeLeftAnimMontage;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage|Dodge", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage|Dodge",
+		meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* DodgeRightAnimMontage;
 
 public:
@@ -86,8 +93,11 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Signals|Camera", meta = (AllowPrivateAccess = "true"))
 	bool LockState = false;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Signals|Camera", meta = (AllowPrivateAccess = "true"))
-	AActor* TargetActor = nullptr;
+	AActor* Target;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Signals|Camera", meta = (AllowPrivateAccess = "true"))
+	float TargetHeight = 0.0f;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Signals|Movement", meta = (AllowPrivateAccess = "true"))
 	FVector PlanarVec;
