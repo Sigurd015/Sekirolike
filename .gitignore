@@ -4,6 +4,7 @@
 
 # Rider user specific files
 .idea/*
+*.uproject.DotSettings.user
 
 # Compiled Object files
 *.slo

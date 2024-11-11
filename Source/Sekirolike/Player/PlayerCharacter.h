@@ -45,6 +45,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	UInputAction* LockAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
+	UInputAction* AttackAction;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* CameraBoom;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
@@ -80,6 +83,19 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage|Dodge",
 		meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* DodgeRightAnimMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage|Attack",
+		meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* Attack1AnimMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage|Attack",
+		meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* Attack2AnimMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage|Attack",
+		meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* Attack3AnimMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage|Attack",
+		meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* Attack4AnimMontage;
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Signals|Animation", meta = (AllowPrivateAccess = "true"))
@@ -124,6 +140,7 @@ private:
 	void StartSprint(const FInputActionInstance& instance);
 	void StopSprinting(const FInputActionInstance& instance);
 	void Dodge(const FInputActionInstance& instance);
+	void Attack(const FInputActionInstance& instance);
 
 	void LockUnlock();
 

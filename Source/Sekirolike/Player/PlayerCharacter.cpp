@@ -57,6 +57,16 @@ void APlayerCharacter::Tick(float DeltaTime)
 
 	Locomotion(DeltaTime);
 	CameraControl(DeltaTime);
+
+	//Debug
+#if WITH_EDITOR
+	//Draw wake direction
+	FVector startLocation = GetActorLocation();
+	startLocation.Z = 0;
+	FVector endLocation = startLocation + Dvec * 200.0f;
+	DrawDebugLine(GetWorld(), startLocation, endLocation, FColor::Red, false, -1, 0,
+	              10.0f);
+#endif
 }
 
 // Called to bind functionality to input
@@ -78,8 +88,6 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		MoveActionBinding = &EnhancedInputComponent->BindActionValue(MoveAction);
 		LookActionBinding = &EnhancedInputComponent->BindActionValue(LookAction);
 
-		EnhancedInputComponent->BindAction(LockAction, ETriggerEvent::Triggered, this, &APlayerCharacter::LockUnlock);
-
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 
@@ -89,6 +97,10 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		                                   &APlayerCharacter::StopSprinting);
 		EnhancedInputComponent->BindAction(SprintDodgeAction, ETriggerEvent::Canceled, this,
 		                                   &APlayerCharacter::Dodge);
+
+		EnhancedInputComponent->BindAction(LockAction, ETriggerEvent::Triggered, this, &APlayerCharacter::LockUnlock);
+
+		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Attack);
 	}
 }
 
@@ -105,15 +117,54 @@ void APlayerCharacter::StopSprinting(const FInputActionInstance& instance)
 
 void APlayerCharacter::Dodge(const FInputActionInstance& instance)
 {
-	GEngine->AddOnScreenDebugMessage(1, 1, FColor::Red, "Playing Dodge Forward Animation");
+	GEngine->AddOnScreenDebugMessage(1, 1, FColor::Red, "Playing Dodge Animation");
 
 	if (LockState)
 	{
+		if (FMath::Abs(Forward) > FMath::Abs(Right))
+		{
+			if (Forward > 0.1f)
+				AnimInstance->Montage_Play(DodgeForwardAnimMontage, 1.0f);
+			else
+				AnimInstance->Montage_Play(DodgeBackwardAnimMontage, 1.0f);
+		}
+		else
+		{
+			if (Right > 0.1f)
+				AnimInstance->Montage_Play(DodgeRightAnimMontage, 1.0f);
+			else
+				AnimInstance->Montage_Play(DodgeLeftAnimMontage, 1.0f);
+		}
 	}
 	else
 	{
 		AnimInstance->Montage_Play(DodgeForwardAnimMontage, 1.0f);
 	}
+}
+
+void APlayerCharacter::Attack(const FInputActionInstance& instance)
+{
+	static int32 attackIndex = 1;
+	GEngine->AddOnScreenDebugMessage(1, 1, FColor::Red, "Playing Attack Animation");
+
+	switch (attackIndex)
+	{
+	case 1:
+		AnimInstance->Montage_Play(Attack1AnimMontage, 1.0f);
+		break;
+	case 2:
+		AnimInstance->Montage_Play(Attack2AnimMontage, 1.0f);
+		break;
+	case 3:
+		AnimInstance->Montage_Play(Attack3AnimMontage, 1.0f);
+		break;
+	case 4:
+		AnimInstance->Montage_Play(Attack4AnimMontage, 1.0f);
+		break;
+	}
+	attackIndex++;
+	if (attackIndex > 4)
+		attackIndex = 1;
 }
 
 void APlayerCharacter::LockUnlock()
@@ -199,9 +250,7 @@ void APlayerCharacter::Locomotion(float deltaTime)
 		Forward = localDevc.X * (!Sprint ? 1.0f : 2.0f);
 
 		if (!LockPlanar)
-		{
-		}
-		AddMovementInput(Dvec, FMath::Clamp(Dmag, (!Sprint ? 0.0f : 0.5f), (!Sprint ? 0.5f : 1.0f)));
+			AddMovementInput(Dvec, FMath::Clamp(Dmag, (!Sprint ? 0.0f : 0.5f), (!Sprint ? 0.5f : 1.0f)));
 	}
 	else
 	{
@@ -213,9 +262,7 @@ void APlayerCharacter::Locomotion(float deltaTime)
 		                           deltaTime, 5.0f);
 
 		if (!LockPlanar)
-		{
-		}
-		AddMovementInput(Dvec, FMath::Clamp(Dmag, (!Sprint ? 0.0f : 0.5f), (!Sprint ? 0.5f : 1.0f)));
+			AddMovementInput(Dvec, FMath::Clamp(Dmag, (!Sprint ? 0.0f : 0.5f), (!Sprint ? 0.5f : 1.0f)));
 	}
 }
 
