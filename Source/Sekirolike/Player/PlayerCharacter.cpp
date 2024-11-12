@@ -13,6 +13,7 @@
 #include "InputAction.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Sekirolike/Weapon/WeaponActor.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -48,6 +49,15 @@ void APlayerCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	AnimInstance = GetMesh()->GetAnimInstance();
+
+	FTransform katanaST = GetMesh()->GetSocketTransform(KatanaSocketName);
+	KatanaActor = GetWorld()->SpawnActor<AWeaponActor>(KatanaToSpawn, katanaST);
+	FTransform scabbardST = GetMesh()->GetSocketTransform(ScabbardSocketName);
+	ScabbardActor = GetWorld()->SpawnActor<AWeaponActor>(ScabbardToSpawn, scabbardST);
+
+	KatanaActor->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, KatanaSocketName);
+	ScabbardActor->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale,
+	                                 ScabbardSocketName);
 }
 
 // Called every frame
@@ -60,12 +70,13 @@ void APlayerCharacter::Tick(float DeltaTime)
 
 	//Debug
 #if WITH_EDITOR
-	//Draw wake direction
+	//Draw direction
 	FVector startLocation = GetActorLocation();
-	startLocation.Z = 0;
-	FVector endLocation = startLocation + Dvec * 200.0f;
-	DrawDebugLine(GetWorld(), startLocation, endLocation, FColor::Red, false, -1, 0,
-	              10.0f);
+	startLocation.Z = 10.0f;
+	DrawDebugDirectionalArrow(GetWorld(), startLocation, startLocation + Dvec * 200.0f, 100.0f, FColor::Red, false, -1,
+	                          0, 5.0f);
+	DrawDebugDirectionalArrow(GetWorld(), startLocation, startLocation + GetActorForwardVector() * 100.0f, 100.0f,
+	                          FColor::Green, false, -1, 0, 5.0f);
 #endif
 }
 

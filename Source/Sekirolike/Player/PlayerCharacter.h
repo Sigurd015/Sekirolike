@@ -15,7 +15,7 @@ class USpringArmComponent;
 class UCameraComponent;
 class AActor;
 class UAnimInstance;
-
+class AWeaponActor;
 
 UCLASS()
 class SEKIROLIKE_API APlayerCharacter : public ACharacter
@@ -56,20 +56,34 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animation", meta = (AllowPrivateAccess = "true"))
 	UAnimInstance* AnimInstance;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera|Camera Settings")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera|Camera Settings")
 	float CameraMaxEulerX = 30.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera|Camera Settings")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera|Camera Settings")
 	float CameraMinEulerX = -40.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera|Camera Settings")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera|Camera Settings")
 	float CameraHorizontalSpeed = 100.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera|Camera Settings")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera|Camera Settings")
 	float CameraVerticalSpeed = 50.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera|Camera Settings|Lock Target")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera|Camera Settings|Lock Target")
 	float LockTargetHeightOffset = 15.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera|Camera Settings|Lock Target")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera|Camera Settings|Lock Target")
 	float LockTargetDistance = 1000.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera|Camera Settings|Lock Target")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera|Camera Settings|Lock Target")
 	float LockTargetRadius = 50.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mesh|Socket", meta = (AllowPrivateAccess = "true"))
+	FName KatanaSocketName = "katana_r";
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mesh|Socket", meta = (AllowPrivateAccess = "true"))
+	FName ScabbardSocketName = "Scabbard_Target01";
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category ="Mesh|Weapon Class", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<AWeaponActor> KatanaToSpawn;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category ="Mesh|Weapon Class", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<AWeaponActor> ScabbardToSpawn;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category ="Mesh|Weapon Actor", meta = (AllowPrivateAccess = "true"))
+	AWeaponActor* KatanaActor;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category ="Mesh|Weapon Actor", meta = (AllowPrivateAccess = "true"))
+	AWeaponActor* ScabbardActor;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage|Dodge",
 		meta = (AllowPrivateAccess = "true"))
