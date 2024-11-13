@@ -18,7 +18,6 @@ AWeaponActor::AWeaponActor()
 void AWeaponActor::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame

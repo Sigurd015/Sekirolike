@@ -20,16 +20,7 @@ APlayerCharacter::APlayerCharacter()
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	//PrimaryActorTick.bCanEverTick = true;
-
-	GetCapsuleComponent()->InitCapsuleSize(34.0f, 88.0f);
-
-	bUseControllerRotationPitch = false;
-	bUseControllerRotationYaw = false;
-	bUseControllerRotationRoll = false;
-
-	GetCharacterMovement()->bOrientRotationToMovement = true;
-	GetCharacterMovement()->RotationRate = FRotator(0.0f, 360.0f, 0.0f);
-
+	
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraRig"));
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->SetRelativeLocation(FVector(0.0f, 0.0f, 60.0f));
@@ -47,17 +38,6 @@ APlayerCharacter::APlayerCharacter()
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
-	AnimInstance = GetMesh()->GetAnimInstance();
-
-	FTransform katanaST = GetMesh()->GetSocketTransform(KatanaSocketName);
-	KatanaActor = GetWorld()->SpawnActor<AWeaponActor>(KatanaToSpawn, katanaST);
-	FTransform scabbardST = GetMesh()->GetSocketTransform(ScabbardSocketName);
-	ScabbardActor = GetWorld()->SpawnActor<AWeaponActor>(ScabbardToSpawn, scabbardST);
-
-	KatanaActor->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, KatanaSocketName);
-	ScabbardActor->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale,
-	                                 ScabbardSocketName);
 }
 
 // Called every frame
@@ -99,6 +79,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		MoveActionBinding = &EnhancedInputComponent->BindActionValue(MoveAction);
 		LookActionBinding = &EnhancedInputComponent->BindActionValue(LookAction);
 
+		EnhancedInputComponent->BindAction(LockAction, ETriggerEvent::Triggered, this, &APlayerCharacter::LockUnlock);
+
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 
@@ -109,9 +91,58 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		EnhancedInputComponent->BindAction(SprintDodgeAction, ETriggerEvent::Canceled, this,
 		                                   &APlayerCharacter::Dodge);
 
-		EnhancedInputComponent->BindAction(LockAction, ETriggerEvent::Triggered, this, &APlayerCharacter::LockUnlock);
-
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Attack);
+
+		EnhancedInputComponent->BindAction(DefenseDeflectAction, ETriggerEvent::Triggered, this,
+		                                   &APlayerCharacter::StartDefense);
+		EnhancedInputComponent->BindAction(DefenseDeflectAction, ETriggerEvent::Completed, this,
+		                                   &APlayerCharacter::StopDefending);
+		EnhancedInputComponent->BindAction(DefenseDeflectAction, ETriggerEvent::Canceled, this,
+		                                   &APlayerCharacter::Deflect);
+	}
+}
+
+void APlayerCharacter::LockUnlock()
+{
+	GEngine->AddOnScreenDebugMessage(1, 2, FColor::Red, "Locking");
+
+	if (Target != nullptr)
+	{
+		Target = nullptr;
+		LockState = false;
+		return;
+	}
+
+	FVector startLocation = GetActorLocation();
+	FVector endLocation = startLocation + GetActorForwardVector() * LockTargetDistance;
+
+	FHitResult HitResult;
+	TArray<AActor*> IgnoresActors;
+	IgnoresActors.Reserve(1);
+	IgnoresActors.Add(this);
+	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypesArray;
+	ObjectTypesArray.Reserve(1);
+	ObjectTypesArray.Add(UEngineTypes::ConvertToObjectType(ECC_Pawn));
+
+	bool hit = UKismetSystemLibrary::SphereTraceSingleForObjects(GetWorld(), startLocation, endLocation,
+	                                                             LockTargetRadius,
+	                                                             ObjectTypesArray,
+	                                                             false, IgnoresActors, EDrawDebugTrace::ForDuration,
+	                                                             HitResult,
+	                                                             true);
+	if (hit)
+	{
+		Target = HitResult.GetActor();
+		FVector origin;
+		FVector boxExtent;
+		Target->GetActorBounds(false, origin, boxExtent);
+		TargetHeight = boxExtent.Z;
+		LockState = true;
+
+		GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red,
+		                                 FString::Printf(TEXT("Obj name:%s"), *Target->GetName()));
+		GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red,
+		                                 FString::Printf(TEXT("Obj height:%f"), TargetHeight));
 	}
 }
 
@@ -178,48 +209,21 @@ void APlayerCharacter::Attack(const FInputActionInstance& instance)
 		attackIndex = 1;
 }
 
-void APlayerCharacter::LockUnlock()
+void APlayerCharacter::StartDefense(const FInputActionInstance& instance)
 {
-	GEngine->AddOnScreenDebugMessage(1, 2, FColor::Red, "Locking");
+	GEngine->AddOnScreenDebugMessage(1, 1, FColor::Red, "Defending");
+	instance.GetElapsedTime() > 0.1f ? Defense = true : Defense = false;
+}
 
-	if (Target != nullptr)
-	{
-		Target = nullptr;
-		LockState = false;
-		return;
-	}
+void APlayerCharacter::StopDefending(const FInputActionInstance& instance)
+{
+	Defense = false;
+}
 
-	FVector startLocation = GetActorLocation();
-	FVector endLocation = startLocation + GetActorForwardVector() * LockTargetDistance;
-
-	FHitResult HitResult;
-	TArray<AActor*> IgnoresActors;
-	IgnoresActors.Reserve(1);
-	IgnoresActors.Add(this);
-	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypesArray;
-	ObjectTypesArray.Reserve(1);
-	ObjectTypesArray.Add(UEngineTypes::ConvertToObjectType(ECC_Pawn));
-
-	bool hit = UKismetSystemLibrary::SphereTraceSingleForObjects(GetWorld(), startLocation, endLocation,
-	                                                             LockTargetRadius,
-	                                                             ObjectTypesArray,
-	                                                             false, IgnoresActors, EDrawDebugTrace::ForDuration,
-	                                                             HitResult,
-	                                                             true);
-	if (hit)
-	{
-		Target = HitResult.GetActor();
-		FVector origin;
-		FVector boxExtent;
-		Target->GetActorBounds(false, origin, boxExtent);
-		TargetHeight = boxExtent.Z;
-		LockState = true;
-
-		GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red,
-		                                 FString::Printf(TEXT("Obj name:%s"), *Target->GetName()));
-		GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red,
-		                                 FString::Printf(TEXT("Obj height:%f"), TargetHeight));
-	}
+void APlayerCharacter::Deflect(const FInputActionInstance& instance)
+{
+	//TODO: Implement Deflect
+	GEngine->AddOnScreenDebugMessage(1, 1, FColor::Red, "Playing Deflect Animation");
 }
 
 // Elliptical Grid Mapping

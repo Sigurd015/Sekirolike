@@ -4,17 +4,21 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "EnemyCharacter.generated.h"
+#include "BaseCharacter.generated.h"
 
+class UAnimInstance;
 class AWeaponActor;
 class UAnimMontage;
 
 UCLASS()
-class SEKIROLIKE_API AEnemyCharacter : public ACharacter
+class SEKIROLIKE_API ABaseCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
 protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animation", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UAnimInstance> AnimInstance;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mesh|Socket", meta = (AllowPrivateAccess = "true"))
 	FName KatanaSocketName = "katana_r";
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mesh|Socket", meta = (AllowPrivateAccess = "true"))
@@ -35,49 +39,51 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category ="Mesh|Weapon Class", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AWeaponActor> ArrowToSpawn;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category ="Mesh|Weapon Actor", meta = (AllowPrivateAccess = "true"))
-	AWeaponActor* KatanaActor;
+	TObjectPtr<AWeaponActor> KatanaActor;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category ="Mesh|Weapon Actor", meta = (AllowPrivateAccess = "true"))
-	AWeaponActor* ScabbardActor;
+	TObjectPtr<AWeaponActor> ScabbardActor;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category ="Mesh|Weapon Actor", meta = (AllowPrivateAccess = "true"))
-	AWeaponActor* BowActor;
+	TObjectPtr<AWeaponActor> BowActor;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category ="Mesh|Weapon Actor", meta = (AllowPrivateAccess = "true"))
-	AWeaponActor* ArrowActor;
+	TObjectPtr<AWeaponActor> ArrowActor;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage|Dodge",
 		meta = (AllowPrivateAccess = "true"))
-	UAnimMontage* DodgeForwardAnimMontage;
+	TObjectPtr<UAnimMontage> DodgeForwardAnimMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage|Dodge",
 		meta = (AllowPrivateAccess = "true"))
-	UAnimMontage* DodgeBackwardAnimMontage;
+	TObjectPtr<UAnimMontage> DodgeBackwardAnimMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage|Dodge",
 		meta = (AllowPrivateAccess = "true"))
-	UAnimMontage* DodgeLeftAnimMontage;
+	TObjectPtr<UAnimMontage> DodgeLeftAnimMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage|Dodge",
 		meta = (AllowPrivateAccess = "true"))
-	UAnimMontage* DodgeRightAnimMontage;
+	TObjectPtr<UAnimMontage> DodgeRightAnimMontage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage|Attack",
 		meta = (AllowPrivateAccess = "true"))
-	UAnimMontage* Attack1AnimMontage;
+	TObjectPtr<UAnimMontage> Attack1AnimMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage|Attack",
 		meta = (AllowPrivateAccess = "true"))
-	UAnimMontage* Attack2AnimMontage;
+	TObjectPtr<UAnimMontage> Attack2AnimMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage|Attack",
 		meta = (AllowPrivateAccess = "true"))
-	UAnimMontage* Attack3AnimMontage;
+	TObjectPtr<UAnimMontage> Attack3AnimMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage|Attack",
 		meta = (AllowPrivateAccess = "true"))
-	UAnimMontage* Attack4AnimMontage;
+	TObjectPtr<UAnimMontage> Attack4AnimMontage;
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Signals|Animation", meta = (AllowPrivateAccess = "true"))
 	float Forward;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Signals|Animation", meta = (AllowPrivateAccess = "true"))
 	float Right;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Signals|Animation", meta = (AllowPrivateAccess = "true"))
+	bool Defense;
 
 public:
 	// Sets default values for this character's properties
-	AEnemyCharacter();
+	ABaseCharacter();
 
 protected:
 	// Called when the game starts or when spawned

@@ -3,22 +3,18 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
+#include "Sekirolike/Character/BaseCharacter.h"
 #include "PlayerCharacter.generated.h"
 
 class UInputMappingContext;
 class UInputAction;
-struct FInputActionValue;
 struct FInputActionInstance;
 struct FEnhancedInputActionValueBinding;
 class USpringArmComponent;
 class UCameraComponent;
-class AActor;
-class UAnimInstance;
-class AWeaponActor;
 
 UCLASS()
-class SEKIROLIKE_API APlayerCharacter : public ACharacter
+class SEKIROLIKE_API APlayerCharacter : public ABaseCharacter
 {
 	GENERATED_BODY()
 
@@ -28,34 +24,33 @@ public:
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
-	UInputMappingContext* DefaultMappingContext;
+	TObjectPtr<UInputMappingContext> DefaultMappingContext;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
-	UInputAction* MoveAction;
-	FEnhancedInputActionValueBinding* MoveActionBinding;
+	TObjectPtr<UInputAction> MoveAction;
+	TObjectPtr<FEnhancedInputActionValueBinding> MoveActionBinding;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
-	UInputAction* LookAction;
-	FEnhancedInputActionValueBinding* LookActionBinding;
+	TObjectPtr<UInputAction> LookAction;
+	TObjectPtr<FEnhancedInputActionValueBinding> LookActionBinding;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
-	UInputAction* JumpAction;
+	TObjectPtr<UInputAction> JumpAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
-	UInputAction* SprintDodgeAction;
+	TObjectPtr<UInputAction> SprintDodgeAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
-	UInputAction* LockAction;
+	TObjectPtr<UInputAction> LockAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
-	UInputAction* AttackAction;
+	TObjectPtr<UInputAction> AttackAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UInputAction> DefenseDeflectAction;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
-	USpringArmComponent* CameraBoom;
+	TObjectPtr<USpringArmComponent> CameraBoom;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
-	UCameraComponent* FollowCamera;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animation", meta = (AllowPrivateAccess = "true"))
-	UAnimInstance* AnimInstance;
-
+	TObjectPtr<UCameraComponent> FollowCamera;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera|Camera Settings")
 	float CameraMaxEulerX = 30.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera|Camera Settings")
@@ -70,52 +65,6 @@ protected:
 	float LockTargetDistance = 1000.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera|Camera Settings|Lock Target")
 	float LockTargetRadius = 50.0f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mesh|Socket", meta = (AllowPrivateAccess = "true"))
-	FName KatanaSocketName = "katana_r";
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mesh|Socket", meta = (AllowPrivateAccess = "true"))
-	FName ScabbardSocketName = "Scabbard_Target01";
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category ="Mesh|Weapon Class", meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<AWeaponActor> KatanaToSpawn;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category ="Mesh|Weapon Class", meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<AWeaponActor> ScabbardToSpawn;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category ="Mesh|Weapon Actor", meta = (AllowPrivateAccess = "true"))
-	AWeaponActor* KatanaActor;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category ="Mesh|Weapon Actor", meta = (AllowPrivateAccess = "true"))
-	AWeaponActor* ScabbardActor;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage|Dodge",
-		meta = (AllowPrivateAccess = "true"))
-	UAnimMontage* DodgeForwardAnimMontage;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage|Dodge",
-		meta = (AllowPrivateAccess = "true"))
-	UAnimMontage* DodgeBackwardAnimMontage;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage|Dodge",
-		meta = (AllowPrivateAccess = "true"))
-	UAnimMontage* DodgeLeftAnimMontage;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage|Dodge",
-		meta = (AllowPrivateAccess = "true"))
-	UAnimMontage* DodgeRightAnimMontage;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage|Attack",
-		meta = (AllowPrivateAccess = "true"))
-	UAnimMontage* Attack1AnimMontage;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage|Attack",
-		meta = (AllowPrivateAccess = "true"))
-	UAnimMontage* Attack2AnimMontage;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage|Attack",
-		meta = (AllowPrivateAccess = "true"))
-	UAnimMontage* Attack3AnimMontage;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation|Montage|Attack",
-		meta = (AllowPrivateAccess = "true"))
-	UAnimMontage* Attack4AnimMontage;
-
-public:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Signals|Animation", meta = (AllowPrivateAccess = "true"))
-	float Forward;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Signals|Animation", meta = (AllowPrivateAccess = "true"))
-	float Right;
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Signals", meta = (AllowPrivateAccess = "true"))
@@ -151,12 +100,14 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 private:
+	void LockUnlock();
 	void StartSprint(const FInputActionInstance& instance);
 	void StopSprinting(const FInputActionInstance& instance);
 	void Dodge(const FInputActionInstance& instance);
 	void Attack(const FInputActionInstance& instance);
-
-	void LockUnlock();
+	void StartDefense(const FInputActionInstance& instance);
+	void StopDefending(const FInputActionInstance& instance);
+	void Deflect(const FInputActionInstance& instance);
 
 	void GridMapping();
 	void Locomotion(float deltaTime);

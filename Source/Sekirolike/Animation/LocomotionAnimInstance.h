@@ -4,21 +4,21 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
-#include "PlayerAnimInstance.generated.h"
+#include "LocomotionAnimInstance.generated.h"
 
-class APlayerCharacter;
+class ABaseCharacter;
 class UCharacterMovementComponent;
 
 UCLASS()
-class SEKIROLIKE_API UPlayerAnimInstance : public UAnimInstance
+class SEKIROLIKE_API ULocomotionAnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ref|Player", meta = (AllowPrivateAccess = "true"))
-	APlayerCharacter* Character;
+	TObjectPtr<ABaseCharacter> Character;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ref|Player", meta = (AllowPrivateAccess = "true"))
-	UCharacterMovementComponent* MovementComponent;
+	TObjectPtr<UCharacterMovementComponent> MovementComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Signals|Animation", meta = (AllowPrivateAccess = "true"))
 	bool IsFalling;
@@ -28,6 +28,8 @@ protected:
 	float Right;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Signals|Animation", meta = (AllowPrivateAccess = "true"))
 	FVector Velocity;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Signals|Animation", meta = (AllowPrivateAccess = "true"))
+	bool Defense;
 
 public:
 	virtual void NativeInitializeAnimation() override;

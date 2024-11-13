@@ -13,7 +13,7 @@ class SEKIROLIKE_API AWeaponActor : public AActor
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh", meta = (AllowPrivateAccess = "true"))
-	UStaticMeshComponent* WeaponMesh;
+	TObjectPtr<UStaticMeshComponent> WeaponMesh;
 
 public:
 	// Sets default values for this actor's properties

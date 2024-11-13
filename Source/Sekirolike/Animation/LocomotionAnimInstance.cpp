@@ -1,20 +1,20 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "PlayerAnimInstance.h"
+#include "LocomotionAnimInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "PlayerCharacter.h"
+#include "Sekirolike/Character/BaseCharacter.h"
 
-void UPlayerAnimInstance::NativeInitializeAnimation()
+void ULocomotionAnimInstance::NativeInitializeAnimation()
 {
-	Character = Cast<APlayerCharacter>(TryGetPawnOwner());
+	Character = Cast<ABaseCharacter>(TryGetPawnOwner());
 	if (Character)
 	{
 		MovementComponent = Character->GetCharacterMovement();
 	}
 }
 
-void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
+void ULocomotionAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	if (Character)
 	{
@@ -22,5 +22,6 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		Right = Character->Right;
 		IsFalling = MovementComponent->IsFalling();
 		Velocity = Character->GetVelocity();
+		Defense = Character->Defense;
 	}
 }
