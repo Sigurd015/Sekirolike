@@ -6,6 +6,8 @@
 #include "Sekirolike/Character/BaseCharacter.h"
 #include "EnemyCharacter.generated.h"
 
+class UEnemyCombatComponent;
+
 UCLASS()
 class SEKIROLIKE_API AEnemyCharacter : public ABaseCharacter
 {
@@ -18,11 +20,13 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	virtual void PossessedBy(AController* NewController) override;
 
 public:
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component|Combat", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UEnemyCombatComponent> EnemyCombatComponent;
 };

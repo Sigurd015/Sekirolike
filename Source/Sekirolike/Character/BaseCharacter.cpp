@@ -3,13 +3,20 @@
 #include "BaseCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
-#include "Sekirolike/Weapon/WeaponActor.h"
+#include "Sekirolike/AbilitySystem/BaseAbilitySystemComponent.h"
+#include "Sekirolike/AbilitySystem/BaseAttributeSet.h"
 
 // Sets default values
 ABaseCharacter::ABaseCharacter()
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	//PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bStartWithTickEnabled = false;
+
+	GetMesh()->bReceivesDecals = false;
+
+	AbilitySystemComponent = CreateDefaultSubobject<UBaseAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
+	AttributeSet = CreateDefaultSubobject<UBaseAttributeSet>(TEXT("AttributeSet"));
 
 	GetCapsuleComponent()->InitCapsuleSize(34.0f, 88.0f);
 
@@ -19,33 +26,22 @@ ABaseCharacter::ABaseCharacter()
 
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 360.0f, 0.0f);
+	GetCharacterMovement()->MaxWalkSpeed = 200.0f;
 }
 
-// Called when the game starts or when spawned
-void ABaseCharacter::BeginPlay()
+UAbilitySystemComponent* ABaseCharacter::GetAbilitySystemComponent() const
 {
-	Super::BeginPlay();
-	
-	AnimInstance = GetMesh()->GetAnimInstance();
-
-	FTransform katanaST = GetMesh()->GetSocketTransform(KatanaSocketName);
-	KatanaActor = GetWorld()->SpawnActor<AWeaponActor>(KatanaToSpawn, katanaST);
-	FTransform scabbardST = GetMesh()->GetSocketTransform(ScabbardSocketName);
-	ScabbardActor = GetWorld()->SpawnActor<AWeaponActor>(ScabbardToSpawn, scabbardST);
-
-	KatanaActor->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, KatanaSocketName);
-	ScabbardActor->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale,
-	                                 ScabbardSocketName);
+	return GetBaseAbilitySystemComponent();
 }
 
-// Called every frame
-void ABaseCharacter::Tick(float DeltaTime)
+void ABaseCharacter::PossessedBy(AController* NewController)
 {
-	Super::Tick(DeltaTime);
-}
+	Super::PossessedBy(NewController);
 
-// Called to bind functionality to input
-void ABaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	if (AbilitySystemComponent)
+	{
+		AbilitySystemComponent->InitAbilityActorInfo(this, this);
+
+		ensureMsgf(!CharacterStartUpData.IsNull(), TEXT("StartUpData is null in %s"), *GetName());
+	}
 }
