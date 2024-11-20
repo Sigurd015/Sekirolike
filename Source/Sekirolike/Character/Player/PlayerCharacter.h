@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "Sekirolike/Character/BaseCharacter.h"
-
 #include "PlayerCharacter.generated.h"
 
 class UInputConfig;
@@ -12,7 +12,6 @@ struct FInputActionValue;
 struct FInputActionInstance;
 class USpringArmComponent;
 class UCameraComponent;
-class UPlayerCombatComponent;
 
 UCLASS()
 class SEKIROLIKE_API APlayerCharacter : public ABaseCharacter
@@ -40,10 +39,7 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UCameraComponent> FollowCamera;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component|Combat", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UPlayerCombatComponent> PlayerCombatComponent;
-
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "DataAsset|Input", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputConfig> InputConfig;
 
@@ -53,6 +49,6 @@ private:
 	void StopSprinting(const FInputActionInstance& instance);
 	void Dodge(const FInputActionInstance& instance);
 
-public:
-	FORCEINLINE UPlayerCombatComponent* GetPlayerCombatComponent() const { return PlayerCombatComponent; }
+	void AbilityInputPressed(FGameplayTag InInputTag);
+	void AbilityInputReleased(FGameplayTag InInputTag);
 };

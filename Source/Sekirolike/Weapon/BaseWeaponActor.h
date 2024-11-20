@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Sekirolike/CustomTypes/CustomStructTypes.h"
 #include "BaseWeaponActor.generated.h"
 
 class UStaticMeshComponent;
@@ -32,8 +33,14 @@ protected:
 	bool bHideSubMeshByDefault = false;
 
 public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|AnimLayer")
+	FWeaponData WeaponData;
+	
 	FORCEINLINE UBoxComponent* GetWeaponCollisionBox() const { return WeaponCollisionBox; }
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon|Setup")
 	void AttachToSocket(USkeletalMeshComponent* Mesh, const FName& WeaponSocket, const FName& SubMeshSocket);
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon|Equip")
+	void EquipWeapon(USkeletalMeshComponent* Mesh, const FName& WeaponSocket);
 };

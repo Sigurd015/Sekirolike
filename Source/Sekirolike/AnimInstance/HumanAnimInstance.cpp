@@ -2,6 +2,8 @@
 
 
 #include "HumanAnimInstance.h"
+
+#include "KismetAnimationLibrary.h"
 #include "Sekirolike/Character/BaseCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -25,4 +27,5 @@ void UHumanAnimInstance::NativeThreadSafeUpdateAnimation(float DeltaSeconds)
 
 	GroundSpeed = Character->GetVelocity().Size2D();
 	bHasAcceleration = MovementComponent->GetCurrentAcceleration().SizeSquared2D() > 0.0f;
+	Direction = UKismetAnimationLibrary::CalculateDirection(Character->GetVelocity(), Character->GetActorRotation());
 }

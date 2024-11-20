@@ -23,7 +23,7 @@ public:
 	                    bool bRegisterAsEquippedWeapon = false);
 
 	UFUNCTION(BlueprintCallable, Category="CombatComponent")
-	ABaseWeaponActor* GetCharacterCarriedWeaponByTag(const FGameplayTag& InWeaponTag);
+	ABaseWeaponActor* GetCharacterCarriedWeaponByTag(FGameplayTag InWeaponTag);
 
 	UFUNCTION(BlueprintCallable, Category="CombatComponent")
 	ABaseWeaponActor* GetCurrentEquippedWeapon();

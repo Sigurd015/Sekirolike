@@ -4,7 +4,7 @@
 #include "BaseGameplayAbility.h"
 #include "AbilitySystemComponent.h"
 #include "Sekirolike/AbilitySystem/BaseAbilitySystemComponent.h"
-#include "Sekirolike/Components/Combat/PawnCombatComponent.h"
+#include "Sekirolike/Character/BaseCharacter.h"
 
 void UBaseGameplayAbility::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
 {
@@ -31,9 +31,19 @@ void UBaseGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle,
 	}
 }
 
-UPawnCombatComponent* UBaseGameplayAbility::GetPawnCombatComponentFromActorInfo() const
+ABaseCharacter* UBaseGameplayAbility::GetBaseCharacterFromActorInfo()
 {
-	return GetAvatarActorFromActorInfo()->FindComponentByClass<UPawnCombatComponent>();
+	if (!CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter = Cast<ABaseCharacter>(CurrentActorInfo->AvatarActor);
+	}
+
+	return CachedBaseCharacter.IsValid() ? CachedBaseCharacter.Get() : nullptr;
+}
+
+UPawnCombatComponent* UBaseGameplayAbility::GetPawnCombatComponentFromActorInfo()
+{
+	return GetBaseCharacterFromActorInfo()->GetPawnCombatComponent();
 }
 
 UBaseAbilitySystemComponent* UBaseGameplayAbility::GetBaseAbilitySystemComponentFromActorInfo() const

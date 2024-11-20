@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "BaseAnimInstance.h"
+#include "GameplayTagContainer.h"
 #include "Animation/AnimInstance.h"
 #include "HumanAnimInstance.generated.h"
 
@@ -22,10 +23,10 @@ public:
 	virtual void NativeThreadSafeUpdateAnimation(float DeltaSeconds) override;
 
 protected:
-	UPROPERTY()
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Owner")
 	TObjectPtr<ABaseCharacter> Character;
 
-	UPROPERTY()
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Owner")
 	TObjectPtr<UCharacterMovementComponent> MovementComponent;
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Signals|Locomotion")
@@ -33,4 +34,7 @@ protected:
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Signals|Locomotion")
 	bool bHasAcceleration;
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Signals|Locomotion")
+	float Direction;
 };

@@ -8,6 +8,7 @@
 
 class UPawnCombatComponent;
 class UBaseAbilitySystemComponent;
+class ABaseCharacter;
 
 UENUM(BlueprintType)
 enum class EAbilityActivationPolicy:uint8
@@ -33,9 +34,15 @@ protected:
 	                        const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility,
 	                        bool bWasCancelled) override;
 
+	UFUNCTION(BlueprintPure, Category="Ability")
+	ABaseCharacter* GetBaseCharacterFromActorInfo();
+
 	UFUNCTION(BlueprintPure, Category = "Ability")
-	UPawnCombatComponent* GetPawnCombatComponentFromActorInfo() const;
+	UPawnCombatComponent* GetPawnCombatComponentFromActorInfo();
 
 	UFUNCTION(BlueprintPure, Category = "Ability")
 	UBaseAbilitySystemComponent* GetBaseAbilitySystemComponentFromActorInfo() const;
+
+private:
+	TWeakObjectPtr<ABaseCharacter> CachedBaseCharacter;
 };

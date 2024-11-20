@@ -5,6 +5,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Sekirolike/AbilitySystem/BaseAbilitySystemComponent.h"
 #include "Sekirolike/AbilitySystem/BaseAttributeSet.h"
+#include "Sekirolike/Components/Combat/PawnCombatComponent.h"
 
 // Sets default values
 ABaseCharacter::ABaseCharacter()
@@ -27,6 +28,8 @@ ABaseCharacter::ABaseCharacter()
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 360.0f, 0.0f);
 	GetCharacterMovement()->MaxWalkSpeed = 200.0f;
+
+	PawnCombatComponent = CreateDefaultSubobject<UPawnCombatComponent>(TEXT("PawnCombatComponent"));
 }
 
 UAbilitySystemComponent* ABaseCharacter::GetAbilitySystemComponent() const

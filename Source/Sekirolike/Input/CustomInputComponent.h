@@ -24,4 +24,21 @@ public:
 			BindAction(InputAction, TriggerEvent, ContextObject, Callback);
 		}
 	}
+
+	template <class UserObject, typename CallbackFunc>
+	void BindAbilityInputAction(const UInputConfig* InInputConfig, UserObject* ContextObject,
+	                            CallbackFunc PressedFunc, CallbackFunc RelasedFunc)
+	{
+		checkf(InInputConfig, TEXT("InputConfig is nullptr"));
+
+		for (const FInputActionConfig& AbilityInputActionConfig : InInputConfig->AbilityInputActions)
+		{
+			if (!AbilityInputActionConfig.IsValid()) continue;
+
+			BindAction(AbilityInputActionConfig.InputAction, ETriggerEvent::Started, ContextObject, PressedFunc,
+			           AbilityInputActionConfig.InputTag);
+			BindAction(AbilityInputActionConfig.InputAction, ETriggerEvent::Completed, ContextObject, RelasedFunc,
+			           AbilityInputActionConfig.InputTag);
+		}
+	}
 };

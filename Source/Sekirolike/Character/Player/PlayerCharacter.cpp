@@ -9,12 +9,13 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "InputAction.h"
-#include "Sekirolike/Components/Combat/PlayerCombatComponent.h"
+#include "Sekirolike/AbilitySystem/BaseAbilitySystemComponent.h"
 #include "Sekirolike/Utils/Math.h"
 #include "Sekirolike/Input/CustomInputComponent.h"
 #include "Sekirolike/DataAsset/Input/InputConfig.h"
 #include "Sekirolike/DataAsset/StartUpData/StartUpData.h"
 #include "Sekirolike/GamePlayTag/GamePlayeTags.h"
+#include "Sekirolike/Utils/Debug.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -30,8 +31,6 @@ APlayerCharacter::APlayerCharacter()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
-
-	PlayerCombatComponent = CreateDefaultSubobject<UPlayerCombatComponent>(TEXT("PlayerCombatComponent"));
 }
 
 // Called when the game starts or when spawned
@@ -56,23 +55,18 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 	UCustomInputComponent* CustomInputComponent = CastChecked<UCustomInputComponent>(PlayerInputComponent);
 	CustomInputComponent->BindNativeInputAction(InputConfig, GamePlayTags::InputTag_Move, ETriggerEvent::Triggered,
-	                                            this,
-	                                            &ThisClass::Move);
+	                                            this, &ThisClass::Move);
 	CustomInputComponent->BindNativeInputAction(InputConfig, GamePlayTags::InputTag_Look, ETriggerEvent::Triggered,
-	                                            this,
-	                                            &ThisClass::Look);
+	                                            this, &ThisClass::Look);
 	CustomInputComponent->BindNativeInputAction(InputConfig, GamePlayTags::InputTag_Sprint_Doge,
-	                                            ETriggerEvent::Triggered,
-	                                            this,
-	                                            &ThisClass::StartSprint);
+	                                            ETriggerEvent::Triggered, this, &ThisClass::StartSprint);
 	CustomInputComponent->BindNativeInputAction(InputConfig, GamePlayTags::InputTag_Sprint_Doge,
-	                                            ETriggerEvent::Completed,
-	                                            this,
-	                                            &ThisClass::StopSprinting);
+	                                            ETriggerEvent::Completed, this, &ThisClass::StopSprinting);
 	CustomInputComponent->BindNativeInputAction(InputConfig, GamePlayTags::InputTag_Sprint_Doge,
-	                                            ETriggerEvent::Canceled,
-	                                            this,
-	                                            &ThisClass::Dodge);
+	                                            ETriggerEvent::Canceled, this, &ThisClass::Dodge);
+
+	CustomInputComponent->BindAbilityInputAction(InputConfig, this, &ThisClass::AbilityInputPressed,
+	                                             &ThisClass::AbilityInputReleased);
 }
 
 void APlayerCharacter::PossessedBy(AController* NewController)
@@ -90,7 +84,7 @@ void APlayerCharacter::PossessedBy(AController* NewController)
 
 void APlayerCharacter::Move(const FInputActionValue& InputActionValue)
 {
-	FVector2D MovementInput = FVector2D(InputActionValue.Get<FVector2D>().X, InputActionValue.Get<FVector2D>().Y);
+	const FVector2D MovementInput = FVector2D(InputActionValue.Get<FVector2D>().X, InputActionValue.Get<FVector2D>().Y);
 	const FRotator MovementRotation(0.0f, GetControlRotation().Yaw, 0.0f);
 
 	if (!MovementInput.IsNearlyZero())
@@ -121,7 +115,7 @@ void APlayerCharacter::Look(const FInputActionValue& value)
 void APlayerCharacter::StartSprint(const FInputActionInstance& instance)
 {
 	if (instance.GetElapsedTime() > 0.1f)
-		GetCharacterMovement()->MaxWalkSpeed = 400.0f;
+		GetCharacterMovement()->MaxWalkSpeed = 500.0f;
 }
 
 void APlayerCharacter::StopSprinting(const FInputActionInstance& instance)
@@ -131,4 +125,14 @@ void APlayerCharacter::StopSprinting(const FInputActionInstance& instance)
 
 void APlayerCharacter::Dodge(const FInputActionInstance& instance)
 {
+}
+
+void APlayerCharacter::AbilityInputPressed(FGameplayTag InInputTag)
+{
+	AbilitySystemComponent->OnAbilityInputPressed(InInputTag);
+}
+
+void APlayerCharacter::AbilityInputReleased(FGameplayTag InInputTag)
+{
+	AbilitySystemComponent->OnAbilityInputReleased(InInputTag);
 }

@@ -11,6 +11,7 @@ class UBaseAbilitySystemComponent;
 class UBaseAttributeSet;
 class UStaticMeshComponent;
 class UStartUpData;
+class UPawnCombatComponent;
 
 UCLASS()
 class SEKIROLIKE_API ABaseCharacter : public ACharacter, public IAbilitySystemInterface
@@ -27,9 +28,12 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component|AbilitySystem")
 	TObjectPtr<UBaseAbilitySystemComponent> AbilitySystemComponent;
-	
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component|AbilitySystem")
 	TObjectPtr<UBaseAttributeSet> AttributeSet;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component|Combat")
+	TObjectPtr<UPawnCombatComponent> PawnCombatComponent;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "DataAsset|StartUpData")
 	TSoftObjectPtr<UStartUpData> CharacterStartUpData;
@@ -41,4 +45,6 @@ public:
 	}
 
 	FORCEINLINE UBaseAttributeSet* GetBaseAttributeSet() const { return AttributeSet.Get(); }
+
+	FORCEINLINE UPawnCombatComponent* GetPawnCombatComponent() const { return PawnCombatComponent; }
 };

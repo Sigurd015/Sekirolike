@@ -2,7 +2,6 @@
 
 
 #include "PawnCombatComponent.h"
-
 #include "Sekirolike/Utils/Debug.h"
 #include "Sekirolike/Weapon/BaseWeaponActor.h"
 
@@ -19,7 +18,7 @@ void UPawnCombatComponent::RegisterWeapon(const FGameplayTag& InWeaponTagToRegis
 		CurrentEquippedWeaponTag = InWeaponTagToRegister;
 }
 
-ABaseWeaponActor* UPawnCombatComponent::GetCharacterCarriedWeaponByTag(const FGameplayTag& InWeaponTag)
+ABaseWeaponActor* UPawnCombatComponent::GetCharacterCarriedWeaponByTag(FGameplayTag InWeaponTag)
 {
 	if (CharacterCarriedWeapons.Contains(InWeaponTag))
 	{

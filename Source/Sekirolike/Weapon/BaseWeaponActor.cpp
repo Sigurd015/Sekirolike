@@ -31,3 +31,8 @@ void ABaseWeaponActor::AttachToSocket(USkeletalMeshComponent* Mesh, const FName&
 	if (bHideSubMeshByDefault)
 		SubMesh->SetVisibility(false);
 }
+
+void ABaseWeaponActor::EquipWeapon(USkeletalMeshComponent* Mesh, const FName& WeaponSocket)
+{
+	WeaponMesh->AttachToComponent(Mesh, FAttachmentTransformRules::SnapToTargetIncludingScale, WeaponSocket);
+}
